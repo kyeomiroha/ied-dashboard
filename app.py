@@ -156,8 +156,8 @@ with tab4:
 
 # ---------------- 5. 축소 실험 ----------------
 with tab5:
-    st.subheader("장비를 줄이면 어디서 성능이 떨어지나")
-    st.write("샘플링 주파수를 낮추거나 채널을 줄여서 랜덤포레스트를 다시 학습함 (개발 환자 교차검증)")
+    st.subheader("샘플링 주파수나 채널 수를 줄였을 때 성능")
+    st.write("뇌파를 더 성기게 찍거나(샘플링 주파수↓) 전극을 덜 붙여도(채널 수↓) 비슷하게 찾는지 보려고 랜덤포레스트를 다시 학습함 (개발 환자 교차검증)")
     fs = reduction[reduction.exp == "fs"][["cond", "pr_auc", "f1_max"]]
     ch = reduction[reduction.exp == "ch"][["cond", "pr_auc", "f1_max"]]
     c1, c2 = st.columns(2)
