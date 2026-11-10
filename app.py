@@ -37,10 +37,10 @@ st.caption("빅데이터반 × 희귀난치병 동아리 · 데이터: vEpiSet (
 with st.sidebar:
     st.header("설정")
     thr_pct = st.slider("기준값", 5, 95, 60, step=5, format="0.%02d",
-                        help="모델이 낸 확률이 이 값 이상이면 IED라고 판정해요")
+                        help="모델이 낸 확률이 이 값 이상이면 IED로 판정함")
     thr = thr_pct / 100
     st.write(f"지금 기준값: **{thr:.2f}**")
-    st.caption("기본값 0.6은 개발 환자 71명 교차검증에서 F1이 가장 높았던 값이에요. 테스트 환자는 보지 않고 정했어요.")
+    st.caption("기본값 0.6은 개발 환자 71명 교차검증에서 F1이 가장 높았던 값. 테스트 환자는 보지 않고 정함")
 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     ["결과 요약", "4초 구간 보기", "환자별 · 종류별", "모델 비교", "축소 실험", "특징 중요도"])
@@ -48,7 +48,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
 # ---------------- 1. 결과 요약 ----------------
 with tab1:
     st.subheader("테스트 환자 13명 결과")
-    st.write("테스트 환자는 학습에 한 번도 안 쓴 환자예요. 모델을 다 정한 뒤 마지막에 한 번만 평가했어요.")
+    st.write("테스트 환자는 학습에 한 번도 안 쓴 환자임. 모델을 다 정한 뒤 마지막에 한 번만 평가함")
     r = sweep[sweep.thr_pct == thr_pct].iloc[0]
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("재현율", f"{r.recall:.0%}", help="실제 IED 중에 찾은 비율")
@@ -70,12 +70,12 @@ with tab1:
         chart = sweep.set_index("thr")[["recall", "precision", "f1"]]
         chart.columns = ["재현율", "정밀도", "F1"]
         st.line_chart(chart, x_label="기준값", y_label="점수")
-        st.caption("기준값을 낮추면 IED를 더 많이 찾지만(재현율↑) 잘못 짚는 것도 늘어나요(정밀도↓).")
+        st.caption("기준값을 낮추면 IED를 더 많이 찾지만(재현율↑) 잘못 짚는 것도 늘어남(정밀도↓)")
 
 # ---------------- 2. 4초 구간 보기 ----------------
 with tab2:
     st.subheader("4초 구간 하나씩 보기")
-    st.write("테스트 환자의 4초 조각 중 일부(환자마다 IED 최대 8개, 정상 7개)를 골라 놨어요. 파형은 125Hz로 줄여서 그렸어요.")
+    st.write("테스트 환자의 4초 조각 중 일부(환자마다 IED 최대 8개, 정상 7개)를 골라 둠. 파형은 125Hz로 줄여서 그림")
 
     col_a, col_b = st.columns(2)
     pid = col_a.selectbox("환자", sorted(segments.patient_id.unique()))
@@ -131,7 +131,7 @@ with tab3:
     pt = patients[patients.thr_pct == thr_pct][["patient_id", "n_seg", "n_ied", "found", "recall", "fp"]]
     pt.columns = ["환자", "조각 수", "IED 수", "찾은 IED", "재현율", "오탐"]
     st.dataframe(pt, hide_index=True, column_config={"재현율": st.column_config.NumberColumn(format="percent")})
-    st.caption("IED가 없는 환자는 재현율이 비어 있어요.")
+    st.caption("IED가 없는 환자는 재현율이 비어 있음")
 
     st.subheader("IED 종류별 재현율")
     ty = types[types.thr_pct == thr_pct].copy()
@@ -141,23 +141,23 @@ with tab3:
     tt = ty[["set", "ied_type", "n_ied", "found", "recall"]]
     tt.columns = ["구분", "IED 종류", "IED 수", "찾은 IED", "재현율"]
     st.dataframe(tt, hide_index=True, column_config={"재현율": st.column_config.NumberColumn(format="percent")})
-    st.caption("종류 1은 잘 찾는데 종류 4는 거의 못 찾아요. 종류 번호가 어느 위치의 IED인지는 아직 확인 못 했어요.")
+    st.caption("종류 1은 잘 찾는데 종류 4는 거의 못 찾음. 종류 번호가 어느 위치의 IED인지는 아직 확인 못 함")
 
 # ---------------- 4. 모델 비교 ----------------
 with tab4:
     st.subheader("로지스틱 회귀 · 랜덤포레스트 · SVM")
-    st.write("세 모델을 같은 특징 36개로 학습했어요. 모델 고르기는 개발 환자 교차검증 PR-AUC로만 했어요.")
+    st.write("세 모델을 같은 특징 36개로 학습함. 모델은 개발 환자 교차검증 PR-AUC로만 골랐음")
     m = models.copy()
     m["eval"] = m["eval"].map({"cv": "교차검증 (개발 71명)", "test": "테스트 (13명)"})
     st.bar_chart(m, x="model", y="pr_auc", color="eval", stack=False, x_label="모델", y_label="PR-AUC")
     m.columns = ["평가", "모델", "PR-AUC", "ROC-AUC", "재현율", "정밀도", "F1", "특이도"]
     st.dataframe(m, hide_index=True)
-    st.caption("이 표의 재현율, 정밀도, F1, 특이도는 기준값 0.5 기준이에요. 아무렇게나 찍으면 PR-AUC는 IED 비율인 0.10 정도가 나와요.")
+    st.caption("이 표의 재현율, 정밀도, F1, 특이도는 기준값 0.5 기준. 아무렇게나 찍으면 PR-AUC는 IED 비율인 0.10 정도가 나옴")
 
 # ---------------- 5. 축소 실험 ----------------
 with tab5:
     st.subheader("장비를 줄이면 어디서 성능이 떨어지나")
-    st.write("샘플링 주파수를 낮추거나 채널을 줄여서 랜덤포레스트를 다시 학습했어요 (개발 환자 교차검증).")
+    st.write("샘플링 주파수를 낮추거나 채널을 줄여서 랜덤포레스트를 다시 학습함 (개발 환자 교차검증)")
     fs = reduction[reduction.exp == "fs"][["cond", "pr_auc", "f1_max"]]
     ch = reduction[reduction.exp == "ch"][["cond", "pr_auc", "f1_max"]]
     c1, c2 = st.columns(2)
@@ -167,7 +167,7 @@ with tab5:
     with c2:
         st.markdown("**채널 수와 위치**")
         st.bar_chart(ch, x="cond", y="pr_auc", x_label="채널", y_label="PR-AUC", horizontal=True, sort=False)
-    st.caption("귀 주변 4채널(T3 T4 T5 T6)만 쓴 게 19채널 전체보다 PR-AUC가 높았어요 (0.53 대 0.49).")
+    st.caption("귀 주변 4채널(T3 T4 T5 T6)만 쓴 게 19채널 전체보다 PR-AUC가 높았음 (0.53 대 0.49)")
 
 # ---------------- 6. 특징 중요도 ----------------
 with tab6:
